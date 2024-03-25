@@ -52,10 +52,22 @@ class FuzzyCMeans:
         # Lists to store centroids and U values at each iteration
         self.centroid_history = []
         self.u_history = []
+        self.objective_func_history = []
 
         for _ in range(self.max_iter):
+            # Calculate centroids and membership matrix
             self.centroids = self._calculate_centroids(data)
             new_u = self._calculate_membership(data)
+
+            # Calculate distances
+            distances = np.linalg.norm(data[:, np.newaxis] - self.centroids, axis=2)
+
+            # Calculate objective function
+            objective_function = np.sum(
+                np.multiply(np.power(new_u, self.m), np.power(distances, 2))
+            )
+
+            self.objective_func_history.append(objective_function)
 
             # Store the centroids and U values
             self.centroid_history.append(self.centroids.copy())
@@ -83,6 +95,15 @@ class FuzzyCMeans:
             list: A list of numpy arrays, where each array represents the membership matrix at an iteration.
         """
         return self.u_history
+
+    def get_objective_func_history(self):
+        """
+        Returns the history of objective function values across iterations.
+
+        Returns:
+            list: A list of objective function values at each iteration.
+        """
+        return self.objective_func_history
 
     def get_initial_u(self):
         """
@@ -197,9 +218,25 @@ if __name__ == "__main__":
     )
 
     fcm.fit(data)
-    initial_u = fcm.get_initial_u()
-    print(initial_u)
 
     # Predict cluster labels
     labels = fcm.predict(data)
     print(labels)
+
+    # Get initial membership matrix
+    initial_u = fcm.get_initial_u()
+    print(initial_u)
+
+    # Get centroid history
+    centroids = fcm.get_centroid_history()
+    centroids = pd.DataFrame(centroids[0])
+    print(centroids)
+
+    # Get U history
+    u_history = fcm.get_u_history()
+    u_history = pd.DataFrame(u_history[0])
+    print(u_history)
+
+    # Get objective function history
+    obj_func_history = fcm.get_objective_func_history()
+    print(obj_func_history[0])
