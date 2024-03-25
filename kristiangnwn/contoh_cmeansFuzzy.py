@@ -15,7 +15,7 @@ df = df_full[features]
 num_attr = len(df.columns) - 1
 
 # Number of Clusters
-k = 2
+k = 5
 
 # Maximum number of iterations
 MAX_ITER = 100
