@@ -47,6 +47,7 @@ class FuzzyCMeans:
             self.U = rng.random((data.shape[0], self.n_clusters))
             self.U /= np.sum(self.U, axis=1)[:, np.newaxis]
             self.init_u = self.U.copy()
+        self.init_u = self.U.copy()
 
         # Lists to store centroids and U values at each iteration
         self.centroid_history = []
@@ -134,13 +135,12 @@ class FuzzyCMeans:
         """
 
         distances = np.linalg.norm(data[:, np.newaxis] - self.centroids, axis=2)
-        distances[distances == 0] = np.finfo(float).eps  # Avoid division by zero
+        distances[distances == 0] = np.finfo(float).eps
 
         inv_distances = 1 / (distances ** (2 / (self.m - 1)))
         return inv_distances / inv_distances.sum(axis=1)[:, np.newaxis]
 
 
-# Example usage
 if __name__ == "__main__":
     # Load the data
     raw_data = pd.read_excel(r"D:\Code\py_code\Fuzzy-Logic\uts\data-facial-wash.xlsx")
