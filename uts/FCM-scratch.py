@@ -3,7 +3,7 @@ import numpy as np
 
 class FuzzyCMeans:
     def __init__(
-        self, n_clusters=5, m=3, max_iter=100, tolerance=0.00001, random_state=None
+        self, n_clusters=5, m=3, max_iter=100, tolerance=0.00001, random_state=42
     ):
         """
         Initializes the Fuzzy C-Means clustering algorithm.
@@ -33,28 +33,27 @@ class FuzzyCMeans:
         """
 
         # Set the random seed for reproducibility
-        if self.random_state is not None:
-            np.random.seed(self.random_state)
+        rng = np.random.default_rng(self.random_state)
 
-        self.U = np.random.rand(data.shape[0], self.n_clusters)
+        self.U = rng.random((data.shape[0], self.n_clusters))
         self.U /= np.sum(self.U, axis=1)[:, np.newaxis]
 
         # Lists to store centroids and U values at each iteration
         self.centroid_history = []
-        self.U_history = []
+        self.u_history = []
 
         for _ in range(self.max_iter):
             self.centroids = self._calculate_centroids(data)
-            new_U = self._calculate_membership(data)
+            new_u = self._calculate_membership(data)
 
             # Store the centroids and U values
             self.centroid_history.append(self.centroids.copy())
-            self.U_history.append(new_U.copy())
+            self.u_history.append(new_u.copy())
 
-            if np.linalg.norm(new_U - self.U) <= self.tolerance:
+            if np.linalg.norm(new_u - self.U) <= self.tolerance:
                 break
 
-            self.U = new_U
+            self.U = new_u
 
     def get_centroid_history(self):
         """
@@ -65,14 +64,14 @@ class FuzzyCMeans:
         """
         return self.centroid_history
 
-    def get_U_history(self):
+    def get_u_history(self):
         """
         Returns the history of membership matrices (U values) across iterations.
 
         Returns:
             list: A list of numpy arrays, where each array represents the membership matrix at an iteration.
         """
-        return self.U_history
+        return self.u_history
 
     def predict(self, data):
         """
