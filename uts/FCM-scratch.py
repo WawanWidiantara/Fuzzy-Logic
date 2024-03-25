@@ -28,22 +28,43 @@ class FuzzyCMeans:
             data (numpy.ndarray): The input data.
         """
 
-        # Initialize membership matrix with random values (normalized)
         self.U = np.random.rand(data.shape[0], self.n_clusters)
         self.U /= np.sum(self.U, axis=1)[:, np.newaxis]
 
-        for _ in range(self.max_iter):
-            # Update cluster centroids
-            self.centroids = self._calculate_centroids(data)
+        # Lists to store centroids and U values at each iteration
+        self.centroid_history = []
+        self.U_history = []
 
-            # Update membership degrees
+        for _ in range(self.max_iter):
+            self.centroids = self._calculate_centroids(data)
             new_U = self._calculate_membership(data)
 
-            # Check for convergence
+            # Store the centroids and U values
+            self.centroid_history.append(self.centroids.copy())
+            self.U_history.append(new_U.copy())
+
             if np.linalg.norm(new_U - self.U) <= self.tolerance:
                 break
 
             self.U = new_U
+
+    def get_centroid_history(self):
+        """
+        Returns the history of centroids across iterations.
+
+        Returns:
+            list: A list of numpy arrays, where each array represents centroids at an iteration.
+        """
+        return self.centroid_history
+
+    def get_U_history(self):
+        """
+        Returns the history of membership matrices (U values) across iterations.
+
+        Returns:
+            list: A list of numpy arrays, where each array represents the membership matrix at an iteration.
+        """
+        return self.U_history
 
     def predict(self, data):
         """
