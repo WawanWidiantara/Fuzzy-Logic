@@ -2,7 +2,9 @@ import numpy as np
 
 
 class FuzzyCMeans:
-    def __init__(self, n_clusters=5, m=3, max_iter=100, tolerance=0.00001):
+    def __init__(
+        self, n_clusters=5, m=3, max_iter=100, tolerance=0.00001, random_state=None
+    ):
         """
         Initializes the Fuzzy C-Means clustering algorithm.
 
@@ -11,12 +13,14 @@ class FuzzyCMeans:
             m (float): The fuzziness parameter (m > 1). Controls the degree of fuzziness in cluster assignments.
             max_iter (int): The maximum number of iterations.
             tolerance (float): Convergence threshold based on changes in the membership matrix.
+            random_state (int, optional): Seed for random number generation. Using a seed ensures same initialization across runs. Defaults to None.
         """
 
         self.n_clusters = n_clusters
         self.m = m
         self.max_iter = max_iter
         self.tolerance = tolerance
+        self.random_state = random_state
         self.centroids = None  # Cluster centroids
         self.U = None  # Membership matrix
 
@@ -27,6 +31,10 @@ class FuzzyCMeans:
         Args:
             data (numpy.ndarray): The input data.
         """
+
+        # Set the random seed for reproducibility
+        if self.random_state is not None:
+            np.random.seed(self.random_state)
 
         self.U = np.random.rand(data.shape[0], self.n_clusters)
         self.U /= np.sum(self.U, axis=1)[:, np.newaxis]
