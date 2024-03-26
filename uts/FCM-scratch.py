@@ -390,15 +390,15 @@ if __name__ == "__main__":
     for j in range(n_clusters):
         plt.scatter(
             data[:, 0][cluster_membership == j],
-            data[:, 3][cluster_membership == j],
+            data[:, 2][cluster_membership == j],
             s=50,
             label=f"Cluster {j+1}",
         )
 
     cntr = np.array(centroids[101])
-    plt.scatter(cntr[:, 0], cntr[:, 3], s=200, c="black", marker="*", label="Centers")
+    plt.scatter(cntr[:, 0], cntr[:, 2], s=200, c="black", marker="*", label="Centers")
     plt.title("FCM Clustering")
     plt.xlabel("Harga")
-    plt.ylabel("Jumlah Terjual")
+    plt.ylabel("Rating")
     plt.legend()
     plt.show()
