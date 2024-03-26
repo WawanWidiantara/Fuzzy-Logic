@@ -53,14 +53,25 @@ class FuzzyCMeans:
         self.centroid_history = []
         self.u_history = []
         self.objective_func_history = []
+        self.l_history = []
+        self.distances_history = []
+        self.inv_distances_history = []
+        self.sum_inv_distances_history = []
 
         for _ in range(self.max_iter):
             # Calculate centroids and membership matrix
             self.centroids = self._calculate_centroids(data)
-            new_u = self._calculate_membership(data)
+            new_u, distances, inv_distances, sum_inv_distances = (
+                self._calculate_membership(data)
+            )
 
-            # Calculate distances
-            distances = np.linalg.norm(data[:, np.newaxis] - self.centroids, axis=2)
+            self.distances_history.append(distances)
+            self.inv_distances_history.append(inv_distances)
+            self.sum_inv_distances_history.append(sum_inv_distances)
+
+            # Calculate L value
+            L = np.multiply(np.power(new_u, self.m), np.power(distances, 2))
+            self.l_history.append(L)
 
             # Calculate objective function
             objective_function = np.sum(
@@ -104,6 +115,28 @@ class FuzzyCMeans:
             list: A list of objective function values at each iteration.
         """
         return self.objective_func_history
+
+    def get_l_history(self):
+        """
+        Returns the history of L values across iterations.
+
+        Returns:
+            list: A list of L values at each iteration.
+        """
+        return self.l_history
+
+    def get_distances_history(self):
+        """
+        Returns the history of distances across iterations.
+
+        Returns:
+            list: A list of distances at each iteration.
+        """
+        return (
+            self.distances_history,
+            self.inv_distances_history,
+            self.sum_inv_distances_history,
+        )
 
     def get_initial_u(self):
         """
@@ -159,7 +192,12 @@ class FuzzyCMeans:
         distances[distances == 0] = np.finfo(float).eps
 
         inv_distances = 1 / (distances ** (2 / (self.m - 1)))
-        return inv_distances / inv_distances.sum(axis=1)[:, np.newaxis]
+        return (
+            inv_distances / inv_distances.sum(axis=1)[:, np.newaxis],
+            distances,
+            inv_distances,
+            inv_distances.sum(axis=1)[:, np.newaxis],
+        )
 
 
 if __name__ == "__main__":
@@ -172,7 +210,7 @@ if __name__ == "__main__":
     n_clusters = 4
     max_iter = 1000
     m = 2
-    error = 0.005
+    error = 0.0001
     initial_u = [
         [0.16989996, 0.36670751, 0.35030788, 0.11308465],
         [0.50992314, 0.163382, 0.10658273, 0.22011213],
@@ -219,24 +257,40 @@ if __name__ == "__main__":
 
     fcm.fit(data)
 
-    # Predict cluster labels
-    labels = fcm.predict(data)
-    print(labels)
+    # initial random membership matrix
+    iu_df = pd.DataFrame(initial_u)
+    iu_df.to_excel("iu_df.xlsx", index=False)
 
-    # Get initial membership matrix
-    initial_u = fcm.get_initial_u()
-    print(initial_u)
+    # # Predict cluster labels
+    # labels = fcm.predict(data)
+    # print(labels)
 
-    # Get centroid history
-    centroids = fcm.get_centroid_history()
-    centroids = pd.DataFrame(centroids[0])
-    print(centroids)
+    # # Get initial membership matrix
+    # initial_u = fcm.get_initial_u()
+    # print(initial_u)
 
-    # Get U history
-    u_history = fcm.get_u_history()
-    u_history = pd.DataFrame(u_history[0])
-    print(u_history)
+    # # Get centroid history
+    # centroids = fcm.get_centroid_history()
+    # centroids = pd.DataFrame(centroids[0])
+    # print(centroids)
 
-    # Get objective function history
-    obj_func_history = fcm.get_objective_func_history()
-    print(obj_func_history[0])
+    # # Get U history
+    # u_history = fcm.get_u_history()
+    # u_history = pd.DataFrame(u_history[0])
+    # print(u_history)
+
+    # # Get objective function history
+    # obj_func_history = fcm.get_objective_func_history()
+    # print(obj_func_history[0])
+
+    # # Get L history
+    # l_history = fcm.get_l_history()
+    # l_history = pd.DataFrame(l_history[0])
+    # print(l_history)
+
+    # Get distances history
+    distances_history, inv_distances_history, sum_inv_distances_history = (
+        fcm.get_distances_history()
+    )
+    distances_history = pd.DataFrame(distances_history[0])
+    print(distances_history)
