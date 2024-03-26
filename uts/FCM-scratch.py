@@ -347,17 +347,11 @@ if __name__ == "__main__":
 
     # Predict cluster labels
     labels = fcm.predict(data)
+    unique_labels = np.unique(labels)
     labels = labels.reshape(raw_data.shape[0], 1)
 
     # Convert label values to strings
-    label_mapping = {
-        0: "Cluster 1",
-        1: "Cluster 2",
-        2: "Cluster 3",
-        3: "Cluster 4",
-        # Add more mappings if needed
-    }
-
+    label_mapping = {i: f"Cluster {i + 1}" for i in range(len(unique_labels))}
     labels = np.vectorize(label_mapping.get)(labels)
 
     # Save the cluster labels
