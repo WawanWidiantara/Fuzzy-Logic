@@ -219,6 +219,74 @@ class FuzzyCMeans:
             inv_distances.sum(axis=1)[:, np.newaxis],
         )
 
+    def save_history(self):
+
+        # Get centroid history
+        centroids = self.get_centroid_history()
+        centroids = pd.DataFrame(centroids[101])
+        centroids.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\centroids.xlsx", index=False
+        )
+
+        # Get U history
+        u_history = self.get_u_history()
+        u_history = pd.DataFrame(u_history[101])
+        u_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\u_history.xlsx", index=False
+        )
+
+        # Get objective function history
+        obj_func_history = self.get_objective_func_history()
+        obj_func_history = pd.DataFrame(obj_func_history)
+        obj_func_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\obj_func_history.xlsx",
+            index=False,
+        )
+
+        # Get L history
+        l_history = self.get_l_history()
+        l_history = pd.DataFrame(l_history[1])
+        l_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\l_history.xlsx", index=False
+        )
+
+        # Get distances history
+        distances_history, inv_distances_history, sum_inv_distances_history = (
+            self.get_distances_history()
+        )
+        distances_history = pd.DataFrame(distances_history[1])
+        distances_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\distances_history.xlsx",
+            index=False,
+        )
+
+        inv_distances_history = pd.DataFrame(inv_distances_history[1])
+        inv_distances_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\inv_distances_history.xlsx",
+            index=False,
+        )
+
+        sum_inv_distances_history = pd.DataFrame(sum_inv_distances_history[1])
+        sum_inv_distances_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\sum_inv_distances_history.xlsx",
+            index=False,
+        )
+
+        # Get weighted sum history
+        weighted_sum_history, membership_sum_history = self.get_weighted_sum_history()
+        weighted_sum_history = pd.DataFrame(weighted_sum_history[0])
+
+        weighted_sum_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\weighted_sum_history.xlsx",
+            index=False,
+        )
+
+        membership_sum_history = pd.DataFrame(membership_sum_history[0])
+        membership_sum_history.to_excel(
+            r"D:\Code\py_code\Fuzzy-Logic\uts\history\membership_sum_history.xlsx",
+            index=False,
+        )
+
 
 if __name__ == "__main__":
     # Load the data
@@ -277,10 +345,6 @@ if __name__ == "__main__":
 
     fcm.fit(data)
 
-    # initial random membership matrix
-    iu_df = pd.DataFrame(initial_u)
-    iu_df.to_excel("iu_df.xlsx", index=False)
-
     # Predict cluster labels
     labels = fcm.predict(data)
     labels = labels.reshape(raw_data.shape[0], 1)
@@ -299,46 +363,9 @@ if __name__ == "__main__":
     # Save the cluster labels
     cluster_data = raw_data.copy()
     cluster_data["Cluster"] = labels
-    cluster_data.to_excel("clustered_data.xlsx", index=False)
+    cluster_data.to_excel(
+        r"D:\Code\py_code\Fuzzy-Logic\uts\clustered_data.xlsx", index=False
+    )
 
-    # # Get initial membership matrix
-    # initial_u = fcm.get_initial_u()
-    # print(initial_u)
-
-    # Get centroid history
-    centroids = fcm.get_centroid_history()
-    centroids = pd.DataFrame(centroids[101])
-    centroids.to_excel("centroids.xlsx", index=False)
-
-    # Get U history
-    u_history = fcm.get_u_history()
-    u_history = pd.DataFrame(u_history[101])
-    u_history.to_excel("u_history.xlsx", index=False)
-
-    # # Get objective function history
-    # obj_func_history = fcm.get_objective_func_history()
-    # print(obj_func_history[0])
-
-    # # Get L history
-    # l_history = fcm.get_l_history()
-    # l_history = pd.DataFrame(l_history[1])
-    # l_history.to_excel("l_history.xlsx", index=False)
-    # print(l_history)
-
-    # # Get distances history
-    # distances_history, inv_distances_history, sum_inv_distances_history = (
-    #     fcm.get_distances_history()
-    # )
-    # distances_history = pd.DataFrame(distances_history[1])
-    # distances_history.to_excel("distances_history.xlsx", index=False)
-
-    # inv_distances_history = pd.DataFrame(inv_distances_history[1])
-    # inv_distances_history.to_excel("inv_distances_history.xlsx", index=False)
-
-    # sum_inv_distances_history = pd.DataFrame(sum_inv_distances_history[1])
-    # sum_inv_distances_history.to_excel("sum_inv_distances_history.xlsx", index=False)
-
-    # # Get weighted sum history
-    # weighted_sum_history, membership_sum_history = fcm.get_weighted_sum_history()
-    # weighted_sum_history = pd.DataFrame(weighted_sum_history[0])
-    # print(weighted_sum_history)
+    # Save the history
+    fcm.save_history()
