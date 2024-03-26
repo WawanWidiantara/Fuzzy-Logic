@@ -346,9 +346,9 @@ if __name__ == "__main__":
     fcm.fit(data)
 
     # Predict cluster labels
-    labels = fcm.predict(data)
-    unique_labels = np.unique(labels)
-    labels = labels.reshape(raw_data.shape[0], 1)
+    cluster_membership = fcm.predict(data)
+    unique_labels = np.unique(cluster_membership)
+    labels = cluster_membership.reshape(raw_data.shape[0], 1)
 
     # Convert label values to strings
     label_mapping = {i: f"Cluster {i + 1}" for i in range(len(unique_labels))}
@@ -363,3 +363,42 @@ if __name__ == "__main__":
 
     # Save the history
     fcm.save_history()
+
+    # Output program
+    print(
+        f"Hyperparameters: \nn_clusters\t= {n_clusters}, \nm\t\t= {m}, \nmax_iter\t= {max_iter}, \ntolerance\t= {error}"
+    )
+    print("-" * 50)
+    init_u = pd.DataFrame(initial_u)
+    print(f"Initial U: \n{init_u}")
+    print("-" * 50)
+    centroids = fcm.get_centroid_history()
+    centroid = pd.DataFrame(centroids[101])
+    print(f"Final centroids: \n{centroid}")
+    print("-" * 50)
+    us = fcm.get_u_history()
+    u = pd.DataFrame(us[101])
+    print(f"Final U: \n{u}")
+    print("-" * 50)
+    print(f"Total iterations: {len(us)}")
+    print("-" * 50)
+    print("Iteration result:")
+    result = pd.read_excel(r"D:\Code\py_code\Fuzzy-Logic\uts\clustered_data.xlsx")
+    print(result)
+
+    # Plot results (adjust if you have more than 2 features)
+    for j in range(n_clusters):
+        plt.scatter(
+            data[:, 0][cluster_membership == j],
+            data[:, 3][cluster_membership == j],
+            s=50,
+            label=f"Cluster {j+1}",
+        )
+
+    cntr = np.array(centroids[101])
+    plt.scatter(cntr[:, 0], cntr[:, 3], s=200, c="black", marker="*", label="Centers")
+    plt.title("FCM Clustering")
+    plt.xlabel("Harga")
+    plt.ylabel("Jumlah Terjual")
+    plt.legend()
+    plt.show()
