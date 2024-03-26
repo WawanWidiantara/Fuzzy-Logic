@@ -51,6 +51,8 @@ class FuzzyCMeans:
 
         # Lists to store centroids and U values at each iteration
         self.centroid_history = []
+        self.weighted_sum_history = []
+        self.membership_sum_history = []
         self.u_history = []
         self.objective_func_history = []
         self.l_history = []
@@ -60,10 +62,15 @@ class FuzzyCMeans:
 
         for _ in range(self.max_iter):
             # Calculate centroids and membership matrix
-            self.centroids = self._calculate_centroids(data)
+            self.centroids, weighted_sum, membership_sum = self._calculate_centroids(
+                data
+            )
             new_u, distances, inv_distances, sum_inv_distances = (
                 self._calculate_membership(data)
             )
+
+            self.weighted_sum_history.append(weighted_sum)
+            self.membership_sum_history.append(membership_sum)
 
             self.distances_history.append(distances)
             self.inv_distances_history.append(inv_distances)
@@ -138,6 +145,15 @@ class FuzzyCMeans:
             self.sum_inv_distances_history,
         )
 
+    def get_weighted_sum_history(self):
+        """
+        Returns the history of weighted sum across iterations.
+
+        Returns:
+            list: A list of weighted sum at each iteration.
+        """
+        return self.weighted_sum_history, self.membership_sum_history
+
     def get_initial_u(self):
         """
         Returns the initial membership matrix.
@@ -157,10 +173,10 @@ class FuzzyCMeans:
         Returns:
             numpy.ndarray: Cluster labels for each data point.
         """
-
+        data_label, _, _, _ = self._calculate_membership(data)
         if self.centroids is None:
             raise ValueError("FCM model not fitted. Call fit() first.")
-        return np.argmax(self._calculate_membership(data), axis=1)
+        return np.argmax(data_label, axis=1)
 
     def _calculate_centroids(self, data):
         """
@@ -175,7 +191,11 @@ class FuzzyCMeans:
 
         weighted_sum = np.dot((self.U**self.m).T, data)
         membership_sums = np.sum(self.U**self.m, axis=0)
-        return weighted_sum / membership_sums[:, np.newaxis]
+        return (
+            weighted_sum / membership_sums[:, np.newaxis],
+            weighted_sum,
+            membership_sums[:, np.newaxis],
+        )
 
     def _calculate_membership(self, data):
         """
@@ -203,8 +223,8 @@ class FuzzyCMeans:
 if __name__ == "__main__":
     # Load the data
     raw_data = pd.read_excel(r"D:\Code\py_code\Fuzzy-Logic\uts\data-facial-wash.xlsx")
-    raw_data = raw_data.drop(["Merk_Produk"], axis=1)
-    data = raw_data.to_numpy()
+    data = raw_data.drop(["Merk_Produk"], axis=1)
+    data = data.to_numpy()
 
     # Set hyperparameters
     n_clusters = 4
@@ -261,23 +281,39 @@ if __name__ == "__main__":
     iu_df = pd.DataFrame(initial_u)
     iu_df.to_excel("iu_df.xlsx", index=False)
 
-    # # Predict cluster labels
-    # labels = fcm.predict(data)
-    # print(labels)
+    # Predict cluster labels
+    labels = fcm.predict(data)
+    labels = labels.reshape(raw_data.shape[0], 1)
+
+    # Convert label values to strings
+    label_mapping = {
+        0: "Cluster 1",
+        1: "Cluster 2",
+        2: "Cluster 3",
+        3: "Cluster 4",
+        # Add more mappings if needed
+    }
+
+    labels = np.vectorize(label_mapping.get)(labels)
+
+    # Save the cluster labels
+    cluster_data = raw_data.copy()
+    cluster_data["Cluster"] = labels
+    cluster_data.to_excel("clustered_data.xlsx", index=False)
 
     # # Get initial membership matrix
     # initial_u = fcm.get_initial_u()
     # print(initial_u)
 
-    # # Get centroid history
-    # centroids = fcm.get_centroid_history()
-    # centroids = pd.DataFrame(centroids[0])
-    # print(centroids)
+    # Get centroid history
+    centroids = fcm.get_centroid_history()
+    centroids = pd.DataFrame(centroids[101])
+    centroids.to_excel("centroids.xlsx", index=False)
 
-    # # Get U history
-    # u_history = fcm.get_u_history()
-    # u_history = pd.DataFrame(u_history[0])
-    # print(u_history)
+    # Get U history
+    u_history = fcm.get_u_history()
+    u_history = pd.DataFrame(u_history[101])
+    u_history.to_excel("u_history.xlsx", index=False)
 
     # # Get objective function history
     # obj_func_history = fcm.get_objective_func_history()
@@ -285,12 +321,24 @@ if __name__ == "__main__":
 
     # # Get L history
     # l_history = fcm.get_l_history()
-    # l_history = pd.DataFrame(l_history[0])
+    # l_history = pd.DataFrame(l_history[1])
+    # l_history.to_excel("l_history.xlsx", index=False)
     # print(l_history)
 
-    # Get distances history
-    distances_history, inv_distances_history, sum_inv_distances_history = (
-        fcm.get_distances_history()
-    )
-    distances_history = pd.DataFrame(distances_history[0])
-    print(distances_history)
+    # # Get distances history
+    # distances_history, inv_distances_history, sum_inv_distances_history = (
+    #     fcm.get_distances_history()
+    # )
+    # distances_history = pd.DataFrame(distances_history[1])
+    # distances_history.to_excel("distances_history.xlsx", index=False)
+
+    # inv_distances_history = pd.DataFrame(inv_distances_history[1])
+    # inv_distances_history.to_excel("inv_distances_history.xlsx", index=False)
+
+    # sum_inv_distances_history = pd.DataFrame(sum_inv_distances_history[1])
+    # sum_inv_distances_history.to_excel("sum_inv_distances_history.xlsx", index=False)
+
+    # # Get weighted sum history
+    # weighted_sum_history, membership_sum_history = fcm.get_weighted_sum_history()
+    # weighted_sum_history = pd.DataFrame(weighted_sum_history[0])
+    # print(weighted_sum_history)
