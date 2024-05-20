@@ -1,9 +1,14 @@
 import numpy as np
 import pandas as pd
+
+
 from fastapi import FastAPI
-from pyDecision.algorithm import promethee_ii
 from pydantic import BaseModel
 from typing import List
+
+
+from pyDecision.algorithm import promethee_ii
+
 
 # Load the data
 data = pd.read_excel("skincaredata.xlsx")
